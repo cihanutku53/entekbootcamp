@@ -1,29 +1,27 @@
 import 'dart:developer';
 import 'package:entekbootcamp/core/home/view/home_view.dart';
 import 'package:entekbootcamp/core/login/viewmodel/login_viewmodel.dart';
-import 'package:entekbootcamp/core/register/register_view.dart';
 import 'package:entekbootcamp/value/colors.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-TextEditingController _controllerUsername =
-    TextEditingController(text: "eve.holt@reqres.in");
-TextEditingController _controllerPassword =
-    TextEditingController(text: "cityslicka");
+TextEditingController _controllerUsername = TextEditingController(text: "");
+TextEditingController _controllerPassword = TextEditingController(text: "");
 
 bool isLoading = false;
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+class RegisterView extends StatefulWidget {
+  const RegisterView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<RegisterView> createState() => _RegisterViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _RegisterViewState extends State<RegisterView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,15 +41,7 @@ class _LoginViewState extends State<LoginView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: LottieBuilder.asset(
-                    "assets/lotties/complete.json",
-                    repeat: false,
-                    height: 200,
-                    width: 200,
-                  )),
-              Text("Uygulamamıza Hoşgeldiniz!",
+              Text("Uygulamamıza Kayıt Olabilirsiniz",
                   style: TextStyle(
                       fontFamily: GoogleFonts.inter().fontFamily,
                       fontWeight: FontWeight.bold,
@@ -75,32 +65,7 @@ class _LoginViewState extends State<LoginView> {
                 ),
               ),
               const Expanded(child: SizedBox()),
-              loginButton(context),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: RichText(
-                  text: TextSpan(
-                    text: 'Hesabın yoksa ',
-                    style: TextStyle(
-                        fontFamily: GoogleFonts.inter().fontFamily,
-                        fontSize: 14,
-                        color: Colors.black),
-                    children: [
-                      TextSpan(
-                          text: 'kayıt ol!',
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => RegisterView()),
-                              );
-                            },
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-              )
+              registerButton(context),
             ],
           ),
         ),
@@ -108,7 +73,7 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  SizedBox loginButton(BuildContext context) {
+  SizedBox registerButton(BuildContext context) {
     return SizedBox(
         height: 48,
         width: MediaQuery.of(context).size.width,
@@ -121,15 +86,30 @@ class _LoginViewState extends State<LoginView> {
                     setState(() {
                       isLoading = true;
                     });
-                    bool state = await LoginViewModel().login(
-                        _controllerUsername.text, _controllerPassword.text);
 
-                    if (state) {
-                      Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomeView()),
-                          (route) => false);
-                    } else {}
+                    try {
+                      UserCredential userCredential = await FirebaseAuth
+                          .instance
+                          .createUserWithEmailAndPassword(
+                              email: "deneme@entek.com", password: "deneme");
+                    } on FirebaseAuthException catch (e) {
+                      if (e.code == 'weak-password') {
+                        print('The password provided is too weak.');
+                      } else if (e.code == 'email-already-in-use') {
+                        print('The account already exists for that email.');
+                      }
+                    } catch (e) {
+                      print(e);
+                    }
+                    // bool state = await LoginViewModel().login(
+                    //     _controllerUsername.text, _controllerPassword.text);
+
+                    // if (state) {
+                    //   Navigator.pushAndRemoveUntil(
+                    //       context,
+                    //       MaterialPageRoute(builder: (context) => HomeView()),
+                    //       (route) => false);
+                    // } else {}
 
                     setState(() {
                       isLoading = false;
@@ -149,7 +129,7 @@ class _LoginViewState extends State<LoginView> {
                 ? CircularProgressIndicator(
                     color: Colors.white,
                   )
-                : Text("Giriş Yap")));
+                : Text("Kayıt Ol")));
   }
 
   AppBar loginAppBar() {

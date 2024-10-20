@@ -1,9 +1,14 @@
-import 'package:entekbootcamp/core/home/view/home_view.dart';
+import 'package:entekbootcamp/core/home/viewmodel/home_viewmodel.dart';
 import 'package:entekbootcamp/core/login/view/login_view.dart';
-import 'package:entekbootcamp/value/texts.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-void main() {
+import 'core/register/firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const FirstPage());
 }
 
@@ -12,9 +17,16 @@ class FirstPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: LoginView(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => HomeViewModel(),
+        )
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: LoginView(),
+      ),
     );
   }
 }

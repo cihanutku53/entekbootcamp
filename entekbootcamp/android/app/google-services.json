@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1069282290686",
+    "project_id": "entek24flutter",
+    "storage_bucket": "entek24flutter.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1069282290686:android:f1705c17aeee0ef106eeaf",
+        "android_client_info": {
+          "package_name": "com.example.entekbootcamp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLnd1W4_m1WMDWo2UAG9j42x5hQcABYM4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
