@@ -1,18 +1,19 @@
-import 'dart:developer';
+import 'package:entekbootcamp/core/components/custom_appbar.dart';
 import 'package:entekbootcamp/core/home/view/home_view.dart';
 import 'package:entekbootcamp/core/login/viewmodel/login_viewmodel.dart';
 import 'package:entekbootcamp/core/register/register_view.dart';
 import 'package:entekbootcamp/value/colors.dart';
+import 'package:entekbootcamp/value/lotties.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 TextEditingController _controllerUsername =
-    TextEditingController(text: "eve.holt@reqres.in");
+    TextEditingController(text: "deneme3@gmail.com ");
 TextEditingController _controllerPassword =
-    TextEditingController(text: "cityslicka");
+    TextEditingController(text: "deneme3");
 
 bool isLoading = false;
 
@@ -27,7 +28,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: loginAppBar(),
+      appBar: MyAppbars().loginAppBar(),
       body: loginBody(context),
     );
   }
@@ -46,10 +47,9 @@ class _LoginViewState extends State<LoginView> {
               Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: LottieBuilder.asset(
-                    "assets/lotties/complete.json",
-                    repeat: false,
+                    MyLotties().loginLottie,
                     height: 200,
-                    width: 200,
+                    width: MediaQuery.of(context).size.width - 32,
                   )),
               Text("Uygulamamıza Hoşgeldiniz!",
                   style: TextStyle(
@@ -76,6 +76,11 @@ class _LoginViewState extends State<LoginView> {
               ),
               const Expanded(child: SizedBox()),
               loginButton(context),
+              // ElevatedButton(
+              //     onPressed: () {
+              //       addFakeDataToFirestore();
+              //     },
+              //     child: Text("Verileri Ekle")),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: RichText(
@@ -121,15 +126,26 @@ class _LoginViewState extends State<LoginView> {
                     setState(() {
                       isLoading = true;
                     });
-                    bool state = await LoginViewModel().login(
-                        _controllerUsername.text, _controllerPassword.text);
+                    // bool state = await LoginViewModel().login(
+                    //     _controllerUsername.text, _controllerPassword.text);
+                    try {
+                      UserCredential userCredential = await FirebaseAuth
+                          .instance
+                          .signInWithEmailAndPassword(
+                              email: _controllerUsername.text.trim(),
+                              password: _controllerPassword.text.trim());
 
-                    if (state) {
                       Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(builder: (context) => HomeView()),
                           (route) => false);
-                    } else {}
+                    } on FirebaseAuthException catch (e) {
+                      if (e.code == 'user-not-found') {
+                        print('No user found for that email.');
+                      } else if (e.code == 'wrong-password') {
+                        print('Wrong password provided for that user.');
+                      }
+                    }
 
                     setState(() {
                       isLoading = false;
@@ -150,18 +166,5 @@ class _LoginViewState extends State<LoginView> {
                     color: Colors.white,
                   )
                 : Text("Giriş Yap")));
-  }
-
-  AppBar loginAppBar() {
-    return AppBar(
-      title: Text("Entek Mobil",
-          style: TextStyle(
-            fontFamily: GoogleFonts.inter().fontFamily,
-            fontWeight: FontWeight.bold,
-          )),
-      centerTitle: true,
-      backgroundColor: MyColors().cetaceanBlue,
-      elevation: 0,
-    );
   }
 }

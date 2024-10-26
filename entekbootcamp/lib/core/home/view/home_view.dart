@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:entekbootcamp/core/components/custom_appbar.dart';
 import 'package:entekbootcamp/core/home/model/get_user_model.dart';
 import 'package:entekbootcamp/core/home/viewmodel/home_viewmodel.dart';
 import 'package:entekbootcamp/core/profile/view/profile_view.dart';
@@ -51,7 +53,8 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: homeAppBar(),
+      appBar: MyAppbars().customAppbarWithActions(
+          context, Icons.message, ProfileView(name: "ahmet")),
       floatingActionButton: homeFloatingActionButton(context),
       body: homeBody(context),
     );
@@ -60,52 +63,47 @@ class _HomeViewState extends State<HomeView> {
   Widget homeBody(BuildContext context) {
     return Column(
       children: [
-        Container(
-          height: 100,
-          width: MediaQuery.of(context).size.width,
-          child: Row(
-            children: [
-              Image.asset(
-                "assets/photos/pp2.png",
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ProfileView(
-                              name: "Ahmete",
-                            )),
-                  );
-                },
-                child: Text(
-                  "Hoşgeldin \n${username}",
-                  style: TextStyle(fontSize: 16),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.grey.shade200,
+            ),
+            height: 100,
+            width: MediaQuery.of(context).size.width,
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ClipRRect(
+                    child: Image.asset(
+                      "assets/photos/pp2.png",
+                    ),
+                    borderRadius: BorderRadius.circular(200),
+                  ),
                 ),
-              ),
-            ],
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ProfileView(
+                                name: "Ahmete",
+                              )),
+                    );
+                  },
+                  child: Text(
+                    "Hoşgeldin \n${username}",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        mylistView(context, "Kişiler", Colors.black45),
+        mylistView2(context, "Günlük Akışın", Colors.black45),
       ],
-    );
-  }
-
-  AppBar homeAppBar() {
-    return AppBar(
-      title: const Text(
-        "ENTEK UYGULAMA",
-        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-      ),
-      actions: [
-        IconButton(
-            onPressed: () {
-              getData();
-            },
-            icon: Icon(Icons.message_rounded))
-      ],
-      elevation: 0,
-      backgroundColor: MyColors().cetaceanBlue,
     );
   }
 
@@ -131,7 +129,7 @@ class _HomeViewState extends State<HomeView> {
         builder: (context, data) {
           GetUsersModel userModel = data.data;
           return SizedBox(
-            height: MediaQuery.of(context).size.height - 200,
+            height: MediaQuery.of(context).size.height - 220,
             width: MediaQuery.of(context).size.width,
             child: Padding(
               padding: EdgeInsets.all(10),
@@ -147,7 +145,7 @@ class _HomeViewState extends State<HomeView> {
                     ),
                   ),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height - 253,
+                    height: MediaQuery.of(context).size.height - 273,
                     width: MediaQuery.of(context).size.width,
                     child: ListView.builder(
                       itemCount: userModel!.data!.length,
@@ -203,6 +201,32 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
           );
+        });
+  }
+
+  Widget mylistView2(BuildContext context, String listTitle, Color color3) {
+    return FutureBuilder<QuerySnapshot>(
+        future: FirebaseFirestore.instance.collection('users').get(),
+        builder: (_, snapshot) {
+          inspect(snapshot);
+          if (snapshot.hasError) return Text('Error = ${snapshot.error}');
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator();
+          }
+          if (snapshot.hasData) {
+            inspect(snapshot.data);
+            return SizedBox(
+              height: MediaQuery.of(context).size.height - 212,
+              child: ListView.builder(
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    return Text(snapshot.data!.docs[index].id);
+                  }),
+            );
+          } else {
+            return Text("Veri yok");
+          }
         });
   }
 }

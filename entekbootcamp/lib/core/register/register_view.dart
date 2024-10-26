@@ -1,16 +1,14 @@
 import 'dart:developer';
-import 'package:entekbootcamp/core/home/view/home_view.dart';
-import 'package:entekbootcamp/core/login/viewmodel/login_viewmodel.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:entekbootcamp/core/components/custom_appbar.dart';
+import 'package:entekbootcamp/core/register/models/user_model.dart';
+import 'package:entekbootcamp/core/succesfuly_view.dart';
 import 'package:entekbootcamp/value/colors.dart';
+import 'package:entekbootcamp/value/controller.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lottie/lottie.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-TextEditingController _controllerUsername = TextEditingController(text: "");
-TextEditingController _controllerPassword = TextEditingController(text: "");
 
 bool isLoading = false;
 
@@ -21,12 +19,38 @@ class RegisterView extends StatefulWidget {
   State<RegisterView> createState() => _RegisterViewState();
 }
 
+TextEditingController controllerUsername = TextEditingController(text: "");
+TextEditingController controllerPassword = TextEditingController(text: "");
+
+TextEditingController controllerEmail = TextEditingController(text: "");
+TextEditingController controllerCity = TextEditingController(text: "");
+TextEditingController controllerJob = TextEditingController(text: "");
+TextEditingController controllerName = TextEditingController(text: "");
+TextEditingController controllerSurname = TextEditingController(text: "");
+
 class _RegisterViewState extends State<RegisterView> {
   @override
+  void initState() {
+    super.initState();
+    controllerUsername.addListener(() => setState(() {}));
+    controllerName.addListener(() => setState(() {}));
+    controllerSurname.addListener(() => setState(() {}));
+    controllerJob.addListener(() => setState(() {}));
+    controllerCity.addListener(() => setState(() {}));
+    controllerPassword.addListener(() => setState(() {}));
+    controllerEmail.addListener(() => setState(() {}));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: loginAppBar(),
-      body: loginBody(context),
+    return WillPopScope(
+      onWillPop: () async {
+        return false;
+      },
+      child: Scaffold(
+        appBar: MyAppbars().loginAppBar(),
+        body: loginBody(context),
+      ),
     );
   }
 
@@ -53,13 +77,43 @@ class _RegisterViewState extends State<RegisterView> {
                       fontFamily: GoogleFonts.inter().fontFamily,
                       fontSize: 14)),
               TextField(
-                controller: _controllerUsername,
+                controller: controllerUsername,
                 decoration: InputDecoration(
                   hintText: "Kullanıcı Adı",
                 ),
               ),
               TextField(
-                controller: _controllerPassword,
+                controller: controllerEmail,
+                decoration: InputDecoration(
+                  hintText: "E-Posta",
+                ),
+              ),
+              TextField(
+                controller: controllerName,
+                decoration: InputDecoration(
+                  hintText: "Name",
+                ),
+              ),
+              TextField(
+                controller: controllerSurname,
+                decoration: InputDecoration(
+                  hintText: "Surname",
+                ),
+              ),
+              TextField(
+                controller: controllerCity,
+                decoration: InputDecoration(
+                  hintText: "Şehir",
+                ),
+              ),
+              TextField(
+                controller: controllerJob,
+                decoration: InputDecoration(
+                  hintText: "Meslek",
+                ),
+              ),
+              TextField(
+                controller: controllerPassword,
                 decoration: InputDecoration(
                   hintText: "Şifre",
                 ),
@@ -88,10 +142,36 @@ class _RegisterViewState extends State<RegisterView> {
                     });
 
                     try {
+                      inspect(
+                        controllerEmail.text,
+                      );
                       UserCredential userCredential = await FirebaseAuth
                           .instance
                           .createUserWithEmailAndPassword(
-                              email: "deneme@entek.com", password: "deneme");
+                              email: controllerEmail.text.toString().trim(),
+                              password:
+                                  controllerPassword.text.toString().trim());
+
+                      await FirebaseFirestore.instance
+                          .collection("users")
+                          .doc(controllerUsername.text.trim())
+                          .set(UserModel(
+                              username:
+                                  controllerUsername.text.toString().trim(),
+                              name: controllerName.text.toString().trim(),
+                              surname: controllerSurname.text.toString().trim(),
+                              job: controllerJob.text.toString().trim(),
+                              birthday: "1998-02-23",
+                              bio:
+                                  "Home he forget hospital question war whatever.",
+                              follows: []).toJson())
+                          .then((value) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SuccessfulyView()),
+                        );
+                      });
                     } on FirebaseAuthException catch (e) {
                       if (e.code == 'weak-password') {
                         print('The password provided is too weak.');
